@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 import logging
 import os
 import argparse
@@ -309,7 +308,7 @@ def save_as_jsonl(race_list : list, outfile_path : str) -> None:
 
 
 def process(work_method : str, DATA_DIR : str):
-	MAX_SEQ_LENGTH = 128
+	MAX_SEQ_LENGTH = 380
 	tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 	
 	outfile_path = r"../datasets/csqa_new/{}_rand_split.jsonl".format(work_method)
@@ -327,6 +326,6 @@ if __name__=='__main__':
 	if len(sys.argv) < 2:
 		raise ValueError("Provide at least one arguments: race data file")
 	DATA_DIR = sys.argv[1]
-	process(work_method='dev', DATA_DIR)
-	process(work_method='test', DATA_DIR)
-	process(work_method='train', DATA_DIR)
+	process(work_method='dev', DATA_DIR=DATA_DIR)
+	process(work_method='test', DATA_DIR=DATA_DIR)
+	process(work_method='train', DATA_DIR=DATA_DIR)
