@@ -155,19 +155,19 @@ def process(filename, batch_id=-1):
         json.dump(pf, fi)
  
 
-# process(sys.argv[1], int(sys.argv[2]))
+process(sys.argv[1], int(sys.argv[2]))
 #
 
-load_resources()
-load_cpnet()
+#load_resources()
+#load_cpnet()
 # find_paths("fill", "fountain_pen", ifprint=True)
 # print("--------")
 # find_paths("write", "fountain_pen", ifprint=True)
 # print("--------")
 # find_paths("write", "pen", ifprint=True)
-find_paths("bottle", "liquor", ifprint=True)
+#find_paths("bottle", "liquor", ifprint=True)
 
-print();print();print();print();print();
+#print();print();print();print();print();
 
 
-find_paths("cashier", "store", ifprint=True)
+#find_paths("cashier", "store", ifprint=True)
