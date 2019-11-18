@@ -124,5 +124,5 @@ def run():
 
 
 if __name__ == "__main__":
-    # run()
-    init_predict(2, 3, 5)
+    run()
+    #init_predict(2, 3, 5)
