@@ -10,9 +10,9 @@ from torch.autograd import Variable
 import torch.autograd as autograd
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import json
-from models import KnowledgeAwareGraphNetworks
+from models import KnowledgeEnhancedRelationNetwork, RelationNetwork, weight_init, GCN_Sent, KnowledgeAwareGraphNetworks
 from tqdm import tqdm
-from csqa_dataset import data_with_paths, collate_csqa_paths, data_with_graphs, data_with_graphs_and_paths, collate_csqa_graphs, collate_csqa_graphs_and_paths
+from my_dataset import data_with_graphs_and_paths, collate_csqa_graphs, collate_csqa_graphs_and_paths
 from parallel import DataParallelModel, DataParallelCriterion
 import copy
 import random
