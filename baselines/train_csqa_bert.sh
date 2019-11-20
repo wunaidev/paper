@@ -2,7 +2,7 @@
 
 export CSQA_DIR=../datasets/csqa_new
 
-/home/bill/miniconda3/bin/python run_csqa_bert.py \
+python run_csqa_bert.py \
      --bert_model bert-large-uncased \
      --do_train \
      --do_lower_case \
