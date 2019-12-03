@@ -4,9 +4,14 @@ from tqdm import tqdm
 import sys
 flag = sys.argv[1]
 threshold = 0.15
-ori_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.pickle"%flag
-scores_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.scores.pickle"%flag
-pruned_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.pruned.%s.pickle"%(flag, str(threshold))
+if flag != 'test':
+    ori_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.pickle"%flag
+    scores_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.scores.pickle"%flag
+    pruned_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.pruned.%s.pickle"%(flag, str(threshold))
+else: 
+    ori_pckle_file = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.pickle"%flag
+    scores_pckle_file = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.cls.scores.pickle"%flag
+    pruned_pckle_file = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.cls.pruned.%s.pickle"%(flag, str(threshold))
 
 # threshold = 0.75
 # threshold = 0.15
