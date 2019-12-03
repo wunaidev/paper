@@ -27,7 +27,7 @@ else:
     PF_PATH = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.cls.pruned.0.15.pickle"%split
     MCP_PATH = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp"%split
 
-NUM_CHOICES = 5
+NUM_CHOICES = 4
 
 cpnet = None
 cpnet_simple = None
