@@ -349,9 +349,14 @@ if __name__=="__main__":
     import sys
     flag = sys.argv[1]
     method = "triple_cls" #
-    mcp_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp"%flag
-    ori_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.pickle"%flag
-    scores_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.scores.pickle"%flag
+    if flag != 'test':
+        mcp_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp"%flag
+        ori_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.pickle"%flag
+        scores_pckle_file = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.scores.pickle"%flag
+    else: 
+        mcp_file = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp"%flag
+        ori_pckle_file = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.pickle"%flag
+        scores_pckle_file = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.cls.scores.pickle"%flag
 
     '''to calculate the context embedding for qas'''
 
