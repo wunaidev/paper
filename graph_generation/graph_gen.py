@@ -18,9 +18,14 @@ split = sys.argv[1]
 config = configparser.ConfigParser()
 config.read("paths.cfg")
 
-GRAPH_PATH = "../datasets/csqa_new/%s_rand_split.jsonl.statements.pruned.0.15.pnxg"%split
-PF_PATH = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.pruned.0.15.pickle"%split
-MCP_PATH = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp"%split
+if split != 'test':
+    GRAPH_PATH = "../datasets/csqa_new/%s_rand_split.jsonl.statements.pruned.0.15.pnxg"%split
+    PF_PATH = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp.pf.cls.pruned.0.15.pickle"%split
+    MCP_PATH = "../datasets/csqa_new/%s_rand_split.jsonl.statements.mcp"%split
+else: 
+    GRAPH_PATH = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.pruned.0.15.pnxg"%split
+    PF_PATH = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp.pf.cls.pruned.0.15.pickle"%split
+    MCP_PATH = "../datasets/csqa_new/%s_rand_split_no_answers.jsonl.statements.mcp"%split
 
 NUM_CHOICES = 5
 
