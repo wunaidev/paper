@@ -14,6 +14,7 @@ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm, trange
 
+
 # String used to indicate a blank
 BLANK_STR = "___"
 sys.path.append("./pytorch-pretrained-BERT")
@@ -118,183 +119,283 @@ def replace_wh_word_with_blank(question_str: str):
 
 
 
-class SwagExample(object):
-    """A single training/test example for the SWAG dataset."""
-    def __init__(self,
-                 swag_id,
-                 context_sentence,
-                 start_ending,
-                 ending_0,
-                 ending_1,
-                 ending_2,
-                 ending_3,
-                 ending_4,
-                 label=None):
-        self.swag_id = swag_id
-        self.context_sentence = context_sentence
-        self.start_ending = start_ending
-        self.endings = [
-            ending_0,
-            ending_1,
-            ending_2,
-            ending_3,
-            ending_4,
-        ]
-        self.label = label
+class RaceExample(object):
+	"""A single training/test example for the RACE dataset."""
+	'''
+	For RACE dataset:
+	race_id: data id
+	context_sentence: article
+	start_ending: question
+	ending_0/1/2/3: option_0/1/2/3
+	label: true answer
+	'''
+	def __init__(self,
+				 race_id,
+				 context_sentence,
+				 start_ending,
+				 ending_0,
+				 ending_1,
+				 ending_2,
+				 ending_3,
+				 label = None):
+		self.race_id = race_id
+		self.context_sentence = context_sentence
+		self.start_ending = start_ending
+		self.endings = [
+			ending_0,
+			ending_1,
+			ending_2,
+			ending_3,
+		]
+		self.label = label
 
-    def __str__(self):
-        return self.__repr__()
+	def __str__(self):
+		return self.__repr__()
 
-    def __repr__(self):
-        l = [
-            "swag_id: {}".format(self.swag_id),
-            "context_sentence: {}".format(self.context_sentence),
-            "start_ending: {}".format(self.start_ending),
-            "ending_0: {}".format(self.endings[0]),
-            "ending_1: {}".format(self.endings[1]),
-            "ending_2: {}".format(self.endings[2]),
-            "ending_3: {}".format(self.endings[3]),
-            "ending_4: {}".format(self.endings[4]),
-        ]
+	def __repr__(self):
+		l = [
+			f"id: {self.race_id}",
+			f"article: {self.context_sentence}",
+			f"question: {self.start_ending}",
+			f"option_0: {self.endings[0]}",
+			f"option_1: {self.endings[1]}",
+			f"option_2: {self.endings[2]}",
+			f"option_3: {self.endings[3]}",
+		]
 
-        if self.label is not None:
-            l.append("label: {}".format(self.label))
+		if self.label is not None:
+			l.append(f"label: {self.label}")
 
-        return ", ".join(l)
+		return ", ".join(l)
 
 
 
 class InputFeatures(object):
-    def __init__(self,
-                 example_id,
-                 choices_features,
-                 label
+	def __init__(self,
+				 example_id,
+				 choices_features,
+				 label
 
-    ):
-        self.example_id = example_id
-        self.choices_features = [
-            {
-                'input_ids': input_ids,
-                'input_mask': input_mask,
-                'segment_ids': segment_ids
-            }
-            for _, input_ids, input_mask, segment_ids in choices_features
-        ]
-        self.label = label
-
-
-def read_csqa_examples(input_file, have_answer=True):
-    with open(input_file, "r", encoding="utf-8") as f:
-        examples = []
-        for line in f.readlines():
-            csqa_json = json.loads(line)
-            if have_answer:
-                label = ord(csqa_json["answerKey"]) - ord("A")
-            else:
-                label = 0  # just as placeholder here for the test data
-            examples.append(
-                SwagExample(
-                    swag_id=csqa_json["id"],
-                    context_sentence=csqa_json["question"]["stem"],
-                    start_ending="",
-                    ending_0=csqa_json["question"]["choices"][0]["text"],
-                    ending_1=csqa_json["question"]["choices"][1]["text"],
-                    ending_2=csqa_json["question"]["choices"][2]["text"],
-                    ending_3=csqa_json["question"]["choices"][3]["text"],
-                    ending_4=csqa_json["question"]["choices"][4]["text"],
-                    label = label
-                ))
-    return examples
+	):
+		self.example_id = example_id
+		self.choices_features = [
+			{
+				'input_ids': input_ids,
+				'input_mask': input_mask,
+				'segment_ids': segment_ids
+			}
+			for _, input_ids, input_mask, segment_ids in choices_features
+		]
+		self.label = label
 
 
-# the original one
+
+
+'''
+这里目前存在一些问题。无法正常读入数据。
+目前的进度是：
+ed_csqa_examples(filename, have_answer=True):
+	examples = []
+	with open(filename, 'r', encoding='utf-8') as f:
+		for line in f.readlines():
+			data_raw = json.loads(line)
+			print(data_raw)
+			article = data_raw['article']
+			if have_answer:
+				truth = ord(data_raw['answers'][i]) - ord('A')
+			else:
+				truth = 0  # just as placeholder here for the test data
+			"""
+			## for each qn
+			for i in range(len(data_raw['answers'])):
+				truth = ord(data_raw['answers'][i]) - ord('A')
+				question = data_raw['questions'][i]
+				options = data_raw['options'][i]
+				examples.append(
+					RaceExample(
+						race_id = filename+'-'+str(i),
+						context_sentence = article,
+						start_ending = question,
+
+						ending_0 = options[0],
+						ending_1 = options[1],
+						ending_2 = options[2],
+						ending_3 = options[3],
+						label = truth))
+			"""
+			examples.append(
+				SwagExample(
+					swag_id=data_raw["id"],
+					context_sentence=data_raw["passage"],
+					start_ending=data_raw["question"]["stem"],
+					ending_0=data_raw["question"]["choices"][0]["text"],
+					ending_1=data_raw["question"]["choices"][1]["text"],
+					ending_2=data_raw["question"]["choices"][2]["text"],
+					ending_3=data_raw["question"]["choices"][3]["text"],
+					label = truth
+				))
+				
+	return examples 
+data_raw = json.load(line)这一行
+Traceback (most recent call last):
+  File "run_csqa_bert.py", line 1073, in <module>
+    main()
+  File "run_csqa_bert.py", line 653, in main
+    ori_train_examples = read_csqa_examples(os.path.join(args.data_dir, 'train_rand_split.jsonl'))
+  File "run_csqa_bert.py", line 199, in read_csqa_examples
+    data_raw = json.load(line)
+  File "/usr/lib/python3.6/json/__init__.py", line 296, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+'''
+'''
+## paths is a list containing all paths
+def read_csqa_examples(paths):
+	examples = []
+	for path in paths:
+		filenames = glob.glob(path+"/*txt")
+		for filename in filenames:
+			with open(filename, 'r', encoding='utf-8') as fpr:
+				data_raw = json.load(fpr)
+				article = data_raw['article']
+				## for each qn
+				for i in range(len(data_raw['answers'])):
+					truth = ord(data_raw['answers'][i]) - ord('A')
+					question = data_raw['questions'][i]
+					options = data_raw['options'][i]
+					examples.append(
+						RaceExample(
+							race_id = filename+'-'+str(i),
+							context_sentence = article,
+							start_ending = question,
+
+							ending_0 = options[0],
+							ending_1 = options[1],
+							ending_2 = options[2],
+							ending_3 = options[3],
+							label = truth))
+				
+	return examples 
+'''
+def read_csqa_examples(filename, have_answer=True):
+	examples = []
+	with open(filename, 'r', encoding='utf-8') as f:
+		for line in f.readlines():
+			data_raw = json.loads(line)
+			if have_answer:
+				truth = ord(data_raw['answerKey']) - ord('A')
+			else:
+				truth = 0  # just as placeholder here for the test data
+			"""
+			## for each qn
+			for i in range(len(data_raw['answers'])):
+				truth = ord(data_raw['answers'][i]) - ord('A')
+				question = data_raw['questions'][i]
+				options = data_raw['options'][i]
+				examples.append(
+					RaceExample(
+						race_id = filename+'-'+str(i),
+						context_sentence = article,
+						start_ending = question,
+
+						ending_0 = options[0],
+						ending_1 = options[1],
+						ending_2 = options[2],
+						ending_3 = options[3],
+						label = truth))
+			"""
+			examples.append(
+				RaceExample(
+					race_id=data_raw["id"],
+					context_sentence=data_raw["passage"],
+					start_ending=data_raw["question"]["stem"],
+					ending_0=data_raw["question"]["choices"][0]["text"],
+					ending_1=data_raw["question"]["choices"][1]["text"],
+					ending_2=data_raw["question"]["choices"][2]["text"],
+					ending_3=data_raw["question"]["choices"][3]["text"],
+					label = truth
+				))
+				
+	return examples 
+
+
 def convert_examples_to_features(examples, tokenizer, max_seq_length,
-                                 is_training):
-    """Loads a data file into a list of `InputBatch`s."""
+								 is_training):
+	"""Loads a data file into a list of `InputBatch`s."""
 
-    # CSQA is a multiple choice task. To perform this task using Bert,
-    # we will use the formatting proposed in "Improving Language
-    # Understanding by Generative Pre-Training" and suggested by
-    # @jacobdevlin-google in this issue
-    # https://github.com/google-research/bert/issues/38.
-    #
-    # Each choice will correspond to a sample on which we run the
-    # inference. For a given Swag example, we will create the 4
-    # following inputs:
-    # - [CLS] context [SEP] choice_1 [SEP]
-    # - [CLS] context [SEP] choice_2 [SEP]
-    # - [CLS] context [SEP] choice_3 [SEP]
-    # - [CLS] context [SEP] choice_4 [SEP]
-    # - [CLS] context [SEP] choice_5 [SEP]
-    # The model will output a single value for each input. To get the
-    # final decision of the model, we will run a softmax over these 4
-    # outputs.
-    features = []
-    for example_index, example in enumerate(examples):
+	# RACE is a multiple choice task. To perform this task using Bert,
+	# we will use the formatting proposed in "Improving Language
+	# Understanding by Generative Pre-Training" and suggested by
+	# @jacobdevlin-google in this issue
+	# https://github.com/google-research/bert/issues/38.
+	#
+	# The input will be like:
+	# [CLS] Article [SEP] Question + Option [SEP]
+	# for each option 
+	# 
+	# The model will output a single value for each input. To get the
+	# final decision of the model, we will run a softmax over these 4
+	# outputs.
+	features = []
+	for example_index, example in enumerate(examples):
+		context_tokens = tokenizer.tokenize(example.context_sentence)
+		start_ending_tokens = tokenizer.tokenize(example.start_ending)
 
-        start_ending_tokens = tokenizer.tokenize(example.start_ending)
+		choices_features = []
+		for ending_index, ending in enumerate(example.endings):
+			# We create a copy of the context tokens in order to be
+			# able to shrink it according to ending_tokens
+			context_tokens_choice = context_tokens[:]
+			ending_tokens = start_ending_tokens + tokenizer.tokenize(ending)
+			# Modifies `context_tokens_choice` and `ending_tokens` in
+			# place so that the total length is less than the
+			# specified length.  Account for [CLS], [SEP], [SEP] with
+			# "- 3"
+			_truncate_seq_pair(context_tokens_choice, ending_tokens, max_seq_length - 3)
 
-        choices_features = []
-        for ending_index, ending in enumerate(example.endings):
-            # We create a copy of the context tokens in order to be
-            # able to shrink it according to ending_tokens
+			tokens = ["[CLS]"] + context_tokens_choice + ["[SEP]"] + ending_tokens + ["[SEP]"]
+			segment_ids = [0] * (len(context_tokens_choice) + 2) + [1] * (len(ending_tokens) + 1)
 
-            statement = create_hypothesis(get_fitb_from_question(example.context_sentence), ending)
+			input_ids = tokenizer.convert_tokens_to_ids(tokens)
+			input_mask = [1] * len(input_ids)
 
-            statement = example.context_sentence
+			# Zero-pad up to the sequence length.
+			padding = [0] * (max_seq_length - len(input_ids))
+			input_ids += padding
+			input_mask += padding
+			segment_ids += padding
 
-            context_tokens = tokenizer.tokenize(statement)
-            context_tokens_choice = context_tokens[:]
+			assert len(input_ids) == max_seq_length
+			assert len(input_mask) == max_seq_length
+			assert len(segment_ids) == max_seq_length
 
-            ending_tokens = start_ending_tokens + tokenizer.tokenize(ending)
-            # Modifies `context_tokens_choice` and `ending_tokens` in
-            # place so that the total length is less than the
-            # specified length.  Account for [CLS], [SEP], [SEP] with
-            # "- 3"
-            _truncate_seq_pair(context_tokens_choice, ending_tokens, max_seq_length - 3)
+			choices_features.append((tokens, input_ids, input_mask, segment_ids))
 
-            tokens = ["[CLS]"] + context_tokens_choice + ["[SEP]"] + ending_tokens + ["[SEP]"]
-            segment_ids = [0] * (len(context_tokens_choice) + 2) + [1] * (len(ending_tokens) + 1)
+		label = example.label
+		## display some example
+		if example_index < 1:
+			logger.info("*** Example ***")
+			logger.info(f"race_id: {example.race_id}")
+			for choice_idx, (tokens, input_ids, input_mask, segment_ids) in enumerate(choices_features):
+				logger.info(f"choice: {choice_idx}")
+				logger.info(f"tokens: {' '.join(tokens)}")
+				logger.info(f"input_ids: {' '.join(map(str, input_ids))}")
+				logger.info(f"input_mask: {' '.join(map(str, input_mask))}")
+				logger.info(f"segment_ids: {' '.join(map(str, segment_ids))}")
+			if is_training:
+				logger.info(f"label: {label}")
 
-            input_ids = tokenizer.convert_tokens_to_ids(tokens)
-            input_mask = [1] * len(input_ids)
+		features.append(
+			InputFeatures(
+				example_id = example.race_id,
+				choices_features = choices_features,
+				label = label
+			)
+		)
 
-            # Zero-pad up to the sequence length.
-            padding = [0] * (max_seq_length - len(input_ids))
-            input_ids += padding
-            input_mask += padding
-            segment_ids += padding
+	return features
 
-            assert len(input_ids) == max_seq_length
-            assert len(input_mask) == max_seq_length
-            assert len(segment_ids) == max_seq_length
-
-            choices_features.append((tokens, input_ids, input_mask, segment_ids))
-
-        label = example.label
-        if example_index == 0 and False:
-            logger.info("*** Example ***")
-            logger.info("swag_id: {}".format(example.swag_id))
-            for choice_idx, (tokens, input_ids, input_mask, segment_ids) in enumerate(choices_features):
-                logger.info("choice: {}".format(choice_idx))
-                logger.info("tokens: {}".format(' '.join(tokens)))
-                logger.info("input_ids: {}".format(' '.join(map(str, input_ids))))
-                logger.info("input_mask: {}".format(' '.join(map(str, input_mask))))
-                logger.info("segment_ids: {}".format(' '.join(map(str, segment_ids))))
-            if is_training:
-                logger.info("label: {}".format(label))
-
-        features.append(
-            InputFeatures(
-                example_id = example.swag_id,
-                choices_features = choices_features,
-                label = label
-            )
-        )
-
-    return features
-
-
+'''
 def m1c_convert_examples_to_features(examples, tokenizer, max_seq_length,
                                  is_training):
     """Loads a data file into a list of `InputBatch`s."""
@@ -384,7 +485,7 @@ def m1c_convert_examples_to_features(examples, tokenizer, max_seq_length,
         )
 
     return features
-
+'''
 
 def _truncate_seq_pair(tokens_a, tokens_b, max_length):
     """Truncates a sequence pair in place to the maximum length."""
@@ -648,7 +749,7 @@ def main():
     if args.do_train:
         ori_train_examples = read_csqa_examples(os.path.join(args.data_dir, 'train_rand_split.jsonl'))
         ori_dev_examples = read_csqa_examples(os.path.join(args.data_dir, 'dev_rand_split.jsonl'))
-        ori_test_examples = read_csqa_examples(os.path.join(args.data_dir, 'train2_rand_split.jsonl'))
+        ori_test_examples = read_csqa_examples(os.path.join(args.data_dir, 'test_rand_split.jsonl'))
 
         if args.inhouse:
             train_examples = ori_train_examples[0:850]  #8500
@@ -666,7 +767,7 @@ def main():
     # Prepare model
     model = BertForMultipleChoice.from_pretrained(args.bert_model,
         cache_dir=os.path.join(PYTORCH_PRETRAINED_BERT_CACHE, 'distributed_{}'.format(args.local_rank)),
-        num_choices=5, mlp_hidden_dim=args.mlp_hidden_dim, mlp_dropout=args.mlp_dropout)
+        num_choices=4, mlp_hidden_dim=args.mlp_hidden_dim, mlp_dropout=args.mlp_dropout)
 
 
     if args.fp16:
@@ -836,7 +937,7 @@ def main():
         output_model_file = os.path.join(args.output_dir, args.save_model_name + ".bin.%d"%(args.epoch_suffix))
         output_config_file = os.path.join(args.output_dir, args.save_model_name + ".config")
         config = BertConfig(output_config_file)
-        model = BertForMultipleChoice(config, num_choices=5, mlp_hidden_dim=args.mlp_hidden_dim, mlp_dropout=args.mlp_dropout)
+        model = BertForMultipleChoice(config, num_choices=4, mlp_hidden_dim=args.mlp_hidden_dim, mlp_dropout=args.mlp_dropout)
 
         model.load_state_dict(torch.load(output_model_file))
         model.to(device)
@@ -881,6 +982,8 @@ def main():
             label_ids = label_ids.to(device)
 
             with torch.no_grad():
+                print(input_ids.size())
+                print(label_ids.size())
                 tmp_eval_loss = model(input_ids, segment_ids, input_mask, label_ids)
                 logits = model(input_ids, segment_ids, input_mask)
 
@@ -1010,8 +1113,8 @@ def main():
         output_model_file = os.path.join(args.output_dir, args.save_model_name + ".bin.%d"%(args.epoch_suffix))
         output_config_file = os.path.join(args.output_dir, args.save_model_name + ".config")
         config = BertConfig(output_config_file)
-        # model = BertForMultipleChoice(config, num_choices=5)
-        model = BertForMultipleChoice(config, num_choices=5, mlp_hidden_dim=args.mlp_hidden_dim, mlp_dropout=args.mlp_dropout)
+        # model = BertForMultipleChoice(config, num_choices=4)
+        model = BertForMultipleChoice(config, num_choices=4, mlp_hidden_dim=args.mlp_hidden_dim, mlp_dropout=args.mlp_dropout)
         model.load_state_dict(torch.load(output_model_file))
         model.to(device)
         eval_examples = read_csqa_examples(os.path.join(args.data_dir, 'test_rand_split_no_answers.jsonl'), have_answer=False)
