@@ -752,7 +752,7 @@ def main():
         ori_test_examples = read_csqa_examples(os.path.join(args.data_dir, 'test_rand_split.jsonl'))
 
         if args.inhouse:
-            train_examples = ori_train_examples[0:850]  #8500
+            train_examples = ori_train_examples[0:8500]  #8500
             test_examples = ori_train_examples[8500:]
             dev_examples = ori_dev_examples[:]
         else:
@@ -781,8 +781,11 @@ def main():
 
         model = DDP(model)
     elif n_gpu > 1:
-        model = torch.nn.DataParallel(model)
-
+        torch.distributed.init_process_group(backend='nccl', init_method='tcp://localhost:23456', rank=0, world_size=1)
+        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[_ for _ in range(n_gpu)], output_device=1, find_unused_parameters=True)
+    
+   # model.cuda()
+    
     # Prepare optimizer
     param_optimizer = list(model.named_parameters())
 
