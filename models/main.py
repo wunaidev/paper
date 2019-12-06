@@ -179,14 +179,14 @@ def train_kagnet_main():
 					  "../datasets/csqa_new/train_rand_split.jsonl.statements.pruned.0.15.pnxg",
 					  "../datasets/csqa_new/train_rand_split.jsonl.statements.mcp.pf.cls.pruned.0.15.pickle",
 					  "../datasets/csqa_new/train_rand_split.jsonl.statements.finetuned.large.-2.npy",
-					  num_choice=5, reload=False, cut_off=3, start=0, end=None)
+					  num_choice=4, reload=False, cut_off=3, start=0, end=None)
 	
 
 	dev_set = data_with_graphs_and_paths("../datasets/csqa_new/dev_rand_split.jsonl.statements",
 					  "../datasets/csqa_new/dev_rand_split.jsonl.statements.pruned.0.15.pnxg",
 					  "../datasets/csqa_new/dev_rand_split.jsonl.statements.mcp.pf.cls.pruned.0.15.pickle",
 					  "../datasets/csqa_new/dev_rand_split.jsonl.statements.finetuned.large.-2.npy",
-					  num_choice=5, reload=False, cut_off=3, start=0, end=None)
+					  num_choice=4, reload=False, cut_off=3, start=0, end=None)
 
 
 	print("len(train_set):", len(train_set), "len(dev_set):", len(dev_set))
