@@ -165,7 +165,7 @@ def train_kagnet_main():
 	bidirect = False
 	batch_size = 50
 	n_epochs = 15
-	num_choice = 5
+	num_choice = 4
 	sent_dim = 1024
 	qas_encoded_dim = 128
 	num_random_paths = None
