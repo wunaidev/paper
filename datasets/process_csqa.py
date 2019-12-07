@@ -94,8 +94,8 @@ def create_hypothesis(fitb: str, choice: str) -> str:
 		choice = choice.rstrip(".")
 	
 	#choice is \\ will raise a syntax error
-	if choice=='\\':
-		choice = '\\\\'
+	if '\\' in choice:
+		choice = choice.replace('\\', '\\\\')
 	# Some questions already have blanks indicated with 2+ underscores
 	hypothesis = re.sub("__+", choice, fitb)
 	return hypothesis
